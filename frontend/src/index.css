@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50:  #f9fbd6;
+  --color-brand-100: #f2f7ae;
+  --color-brand-200: #e8f07a;
+  --color-brand-300: #d9e64e;
+  --color-brand-400: #ccdc2f;
+  --color-brand-500: #b8c929;
+  --color-brand-600: #9aaa1f;
+  --color-brand-700: #768217;
+  --color-brand-800: #546010;
+  --color-brand-900: #364009;
+}
+
+* {
+  font-family: "Changa One", sans-serif;
+}

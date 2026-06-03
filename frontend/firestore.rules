@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rate list is publicly readable so the storefront can show products;
+    // only the signed-in owner can change prices.
+    match /rates/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Customers (not logged in) may create an order; only the owner can
+    // read, update (accept) or delete orders.
+    match /orders/{id} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // Everything else (sales, expenses) — owner only.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
