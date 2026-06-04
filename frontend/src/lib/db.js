@@ -55,11 +55,30 @@ export async function seedDefaultRates() {
 }
 
 // ---- Sales ----
+// Legacy single-item add (kept for backward compat with convertOrderToSales)
 export const addSale = (data) =>
   addDoc(salesCol, { ...data, month: monthOf(data.date), createdAt: serverTimestamp() })
 export const updateSale = (id, data) =>
   updateDoc(doc(db, 'sales', id), { ...data, month: monthOf(data.date) })
 export const deleteSale = (id) => deleteDoc(doc(db, 'sales', id))
+
+// New grouped sale order — one document per customer visit
+// Structure: { customerName, date, month, items: [{product, qty, unitPrice, discount, lineTotal}], total, note }
+export const addSaleOrder = (data) =>
+  addDoc(salesCol, {
+    ...data,
+    month: monthOf(data.date),
+    type: 'order',           // distinguishes from old single-item docs
+    createdAt: serverTimestamp(),
+  })
+
+// getSales returns all docs for a month, newest first
+export async function getSales(month) {
+  const snap = await getDocs(
+    query(salesCol, where('month', '==', month), orderBy('createdAt', 'desc'))
+  )
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+}
 
 // ---- Expenses ----
 export const EXPENSE_CATEGORIES = [
