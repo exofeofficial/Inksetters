@@ -189,8 +189,8 @@ export default function Corporate() {
 
   const pickFile = (f) => {
     if (!f) return
-    if (f.type !== 'application/pdf') { alert('Sirf PDF file allowed hai.'); return }
-    if (f.size > 20 * 1024 * 1024)   { alert('File 20 MB se chhoti honi chahiye.'); return }
+    if (f.type !== 'application/pdf') { alert('Only PDF files are allowed.'); return }
+    if (f.size > 20 * 1024 * 1024)   { alert('File must be smaller than 20 MB.'); return }
     setFile({ raw: f, name: f.name, size: (f.size / 1024).toFixed(0) + ' KB' })
   }
 
@@ -239,57 +239,47 @@ export default function Corporate() {
 
       {/* ── HERO + FORM ── */}
       <section className="relative bg-slate-900 overflow-hidden">
-        {/* Background glows */}
-        <div aria-hidden className="pointer-events-none absolute top-0 left-[8%] w-[44rem] h-[44rem] rounded-full bg-brand-500/8 blur-[130px]" />
-        <div aria-hidden className="pointer-events-none absolute bottom-0 right-[5%] w-[32rem] h-[32rem] rounded-full bg-sky-500/5 blur-[110px]" />
-        {/* subtle grid */}
+        {/* Background glows — smaller on mobile to reduce paint cost */}
+        <div aria-hidden className="pointer-events-none absolute top-0 left-[8%] w-[28rem] h-[28rem] sm:w-[44rem] sm:h-[44rem] rounded-full bg-brand-500/8 blur-[90px] sm:blur-[130px]" />
+        <div aria-hidden className="pointer-events-none absolute bottom-0 right-[5%] w-[20rem] h-[20rem] sm:w-[32rem] sm:h-[32rem] rounded-full bg-sky-500/5 blur-[80px] sm:blur-[110px]" />
+        {/* subtle grid — hidden on mobile */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.025]"
+          className="pointer-events-none absolute inset-0 opacity-[0.025] hidden sm:block"
           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px)', backgroundSize: '48px 48px' }}
         />
 
         <div className="relative max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px] gap-12 xl:gap-24 items-start py-24 sm:py-28 lg:py-32">
+          <div className="grid lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px] gap-10 xl:gap-24 items-start py-24 sm:py-28 lg:py-32">
 
             {/* ── LEFT — Details ── */}
-            <div className="pt-2">
+            {/* Single wrapper animation instead of animating each child separately — much lighter on mobile */}
+            <motion.div
+              className="pt-2"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
               {/* Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 bg-brand-500/15 border border-brand-500/25 rounded-full px-4 py-1.5 mb-8"
-              >
+              <div className="inline-flex items-center gap-2 bg-brand-500/15 border border-brand-500/25 rounded-full px-4 py-1.5 mb-8">
                 <Building2 size={13} className="text-brand-400" />
                 <span className="text-brand-400 text-xs font-bold uppercase tracking-[0.18em]">Corporate Solutions</span>
-              </motion.div>
+              </div>
 
               {/* Heading */}
-              <motion.h1
-                initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="text-5xl sm:text-6xl xl:text-7xl font-black tracking-tighter leading-none text-white mb-6"
-              >
+              <h1 className="text-5xl sm:text-6xl xl:text-7xl font-black tracking-tighter leading-none text-white mb-6">
                 Print at scale.
                 <span className="block text-brand-400">Built for business.</span>
-              </motion.h1>
+              </h1>
 
               {/* Description */}
-              <motion.p
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.16, duration: 0.6 }}
-                className="text-slate-400 text-lg leading-relaxed max-w-lg mb-10"
-              >
+              <p className="text-slate-400 text-lg leading-relaxed max-w-lg mb-10">
                 From 50 business cards to 5,000 branded uniforms — Inksetters delivers consistent,
                 premium-quality prints for businesses of every size across Lahore.
-              </motion.p>
+              </p>
 
               {/* Benefits list */}
-              <motion.ul
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.22, duration: 0.6 }}
-                className="space-y-5 mb-12"
-              >
+              <ul className="space-y-5 mb-12">
                 {BENEFITS.map(({ icon: Icon, title, desc }) => (
                   <li key={title} className="flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-brand-500/15 border border-brand-500/20 flex items-center justify-center shrink-0 mt-0.5">
@@ -301,28 +291,20 @@ export default function Corporate() {
                     </div>
                   </li>
                 ))}
-              </motion.ul>
+              </ul>
 
               {/* Stats */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6 }}
-                className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10"
-              >
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
                 {STATS.map(({ val, label, color }) => (
                   <div key={label} className="bg-white/5 border border-white/8 rounded-2xl p-4 text-center hover:bg-white/10 transition-colors">
                     <p className={`text-2xl font-black ${color}`}>{val}</p>
                     <p className="text-slate-500 text-xs mt-1 font-medium">{label}</p>
                   </div>
                 ))}
-              </motion.div>
+              </div>
 
               {/* Contact details */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.36, duration: 0.6 }}
-                className="flex flex-col sm:flex-row gap-4 sm:gap-8"
-              >
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                 <a href="https://wa.me/923398000112" target="_blank" rel="noreferrer"
                    className="flex items-center gap-2 text-slate-400 hover:text-brand-400 transition-colors text-sm group">
                   <div className="w-8 h-8 rounded-lg bg-white/6 group-hover:bg-brand-500/15 flex items-center justify-center shrink-0 transition-colors">
@@ -343,13 +325,14 @@ export default function Corporate() {
                   </div>
                   Lahore, Pakistan
                 </span>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
 
-            {/* ── RIGHT — Form ── */}
+            {/* ── RIGHT — Form — fade only (no x-slide) for smooth mobile render ── */}
             <motion.div
-              initial={{ opacity: 0, x: 32 }} animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.18, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
               className="lg:sticky lg:top-8"
             >
               <AnimatePresence mode="wait">
@@ -366,11 +349,8 @@ export default function Corporate() {
                       <CheckCircle2 size={30} className="text-white" />
                     </div>
                     <h3 className="text-2xl font-black text-slate-900 mb-2">Inquiry Received!</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed mb-1">
-                      Shukriya! Hamari team 2 ghante ke andar
-                    </p>
                     <p className="text-slate-500 text-sm leading-relaxed mb-7">
-                      aap se rabta karegi.
+                      Thank you! Our team will get back to you within 2 hours.
                     </p>
                     <div className="flex items-center justify-center gap-2 mb-7">
                       {[...Array(5)].map((_, i) => (
@@ -582,7 +562,7 @@ export default function Corporate() {
 
                       {status === 'error' && (
                         <p className="text-red-500 text-sm bg-red-50 rounded-xl px-4 py-2.5 border border-red-100">
-                          Kuch masla ho gaya. Please dobara try karein.
+                          Something went wrong. Please try again or contact us on WhatsApp.
                         </p>
                       )}
 
