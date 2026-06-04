@@ -72,12 +72,15 @@ export const addSaleOrder = (data) =>
     createdAt: serverTimestamp(),
   })
 
-// getSales returns all docs for a month, newest first
+// getSales returns all docs for a month, sorted by date desc (client-side sort
+// avoids needing a composite Firestore index for where+orderBy).
 export async function getSales(month) {
-  const snap = await getDocs(
-    query(salesCol, where('month', '==', month), orderBy('createdAt', 'desc'))
-  )
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  const q = month
+    ? query(salesCol, where('month', '==', month))
+    : query(salesCol, orderBy('date', 'desc'))
+  const snap = await getDocs(q)
+  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+  return rows.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 }
 
 // ---- Expenses ----
