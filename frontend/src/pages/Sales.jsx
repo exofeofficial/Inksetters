@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { listRates, getSales, addSaleOrder, deleteSale } from '../lib/db'
 import { rs, today, thisMonth, monthLabel } from '../lib/format'
 import {
-  Plus, Trash2, ChevronDown, ChevronRight, User,
+  Plus, Trash2, ChevronRight, User,
   FileText, Check, TrendingUp, ShoppingBag,
+  Banknote, Smartphone, Clock,
 } from 'lucide-react'
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -145,6 +146,8 @@ export default function Sales() {
   const [date, setDate]               = useState(today())
   const [customerName, setCustomerName] = useState('')
   const [note, setNote]               = useState('')
+  const [payMethod, setPayMethod]     = useState('cash')    // 'cash' | 'online'
+  const [payStatus, setPayStatus]     = useState('paid')    // 'paid' | 'pending'
   const [items, setItems]             = useState([])
 
   const loadSales = async (m) => {
@@ -172,10 +175,15 @@ export default function Sales() {
   const removeItem = (idx) => setItems(prev => prev.filter((_, i) => i !== idx))
 
   const grandTotal = useMemo(() => items.reduce((s, it) => s + lineTotal(it), 0), [items])
-  const monthTotal = useMemo(() => sales.reduce((s, x) => s + (x.total || 0), 0), [sales])
+  const monthTotal   = useMemo(() => sales.reduce((s, x) => s + (x.total || 0), 0), [sales])
+  const cashTotal    = useMemo(() => sales.filter(x => x.paymentMethod === 'cash'   || !x.paymentMethod).reduce((s, x) => s + (x.total || 0), 0), [sales])
+  const onlineTotal  = useMemo(() => sales.filter(x => x.paymentMethod === 'online').reduce((s, x) => s + (x.total || 0), 0), [sales])
+  const pendingTotal = useMemo(() => sales.filter(x => x.paymentStatus === 'pending').reduce((s, x) => s + (x.total || 0), 0), [sales])
+  const pendingCount = useMemo(() => sales.filter(x => x.paymentStatus === 'pending').length, [sales])
 
   const resetForm = () => {
     setCustomerName(''); setNote(''); setDate(today())
+    setPayMethod('cash'); setPayStatus('paid')
     setItems([blankItem(rates)])
   }
 
@@ -187,6 +195,8 @@ export default function Sales() {
       date,
       customerName: customerName.trim() || 'Walk-in',
       note: note.trim(),
+      paymentMethod: payMethod,
+      paymentStatus: payStatus,
       items: items.map(it => ({
         product:   it.product,
         qty:       Number(it.qty),
@@ -237,26 +247,40 @@ export default function Sales() {
       </div>
 
       {/* Month summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="bg-brand-500 rounded-2xl px-5 py-4 col-span-2 sm:col-span-1 flex items-center gap-4">
-          <TrendingUp size={22} className="text-white/70 shrink-0" />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Total */}
+        <div className="bg-brand-500 rounded-2xl px-4 py-4 col-span-2 sm:col-span-1 flex items-center gap-3">
+          <TrendingUp size={20} className="text-white/70 shrink-0" />
           <div>
-            <p className="text-white/70 text-xs font-medium">{monthLabel(month)}</p>
-            <p className="text-white text-2xl font-black">{rs(monthTotal)}</p>
+            <p className="text-white/70 text-[11px] font-medium">{monthLabel(month)}</p>
+            <p className="text-white text-xl font-black">{rs(monthTotal)}</p>
           </div>
         </div>
-        <div className="bg-white border border-slate-100 rounded-2xl px-5 py-4 flex items-center gap-4">
-          <ShoppingBag size={20} className="text-slate-300 shrink-0" />
+        {/* Cash */}
+        <div className="bg-white border border-slate-100 rounded-2xl px-4 py-4 flex items-center gap-3">
+          <Banknote size={18} className="text-emerald-400 shrink-0" />
           <div>
-            <p className="text-slate-400 text-xs font-medium">Total Sales</p>
-            <p className="text-slate-900 text-xl font-black">{sales.length}</p>
+            <p className="text-slate-400 text-[11px] font-medium">Cash</p>
+            <p className="text-slate-900 text-lg font-black">{rs(cashTotal)}</p>
           </div>
         </div>
-        <div className="bg-white border border-slate-100 rounded-2xl px-5 py-4 flex items-center gap-4">
-          <FileText size={20} className="text-slate-300 shrink-0" />
+        {/* Online */}
+        <div className="bg-white border border-slate-100 rounded-2xl px-4 py-4 flex items-center gap-3">
+          <Smartphone size={18} className="text-blue-400 shrink-0" />
           <div>
-            <p className="text-slate-400 text-xs font-medium">Days Active</p>
-            <p className="text-slate-900 text-xl font-black">{grouped.length}</p>
+            <p className="text-slate-400 text-[11px] font-medium">Online</p>
+            <p className="text-slate-900 text-lg font-black">{rs(onlineTotal)}</p>
+          </div>
+        </div>
+        {/* Pending */}
+        <div className={`rounded-2xl px-4 py-4 flex items-center gap-3 border
+          ${pendingCount > 0 ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100'}`}>
+          <Clock size={18} className={pendingCount > 0 ? 'text-amber-500 shrink-0' : 'text-slate-300 shrink-0'} />
+          <div>
+            <p className={`text-[11px] font-medium ${pendingCount > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+              Pending {pendingCount > 0 && `(${pendingCount})`}
+            </p>
+            <p className={`text-lg font-black ${pendingCount > 0 ? 'text-amber-700' : 'text-slate-900'}`}>{rs(pendingTotal)}</p>
           </div>
         </div>
       </div>

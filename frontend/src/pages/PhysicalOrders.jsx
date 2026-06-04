@@ -11,7 +11,7 @@ import {
   Plus, Minus, Trash2, CheckCircle, ChevronDown, X,
   Phone, User, FileText, ShoppingBag, ClipboardList,
   Scissors, Layers, PenLine, Check, Clock, AlertCircle, XCircle,
-  Zap, Package, ArrowRight, ShoppingCart, Banknote, Smartphone,
+  Zap, Package, ArrowRight, ShoppingCart, Banknote, Smartphone, Calendar,
 } from 'lucide-react'
 
 // ── Category colours ──────────────────────────────────────────────────────────
@@ -239,20 +239,28 @@ function HistoryCard({ order, onRefresh }) {
           <span className="text-sm font-black text-slate-900">{rs(order.total)}</span>
           {order.advance > 0 && <span className="ml-2 text-[11px] text-emerald-600 font-semibold">adv {rs(order.advance)}</span>}
           {balance > 0 && order.advance > 0 && <span className="ml-1 text-[11px] text-amber-600 font-semibold">due {rs(balance)}</span>}
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             <p className="text-[10px] text-slate-400">{order.date}</p>
+
+            {/* Method badge */}
             {order.paymentMethod && (
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full
-                ${order.paymentMethod === 'online'
-                  ? 'bg-blue-100 text-blue-600'
-                  : 'bg-emerald-100 text-emerald-600'}`}>
-                <span className="flex items-center gap-1">
+              <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full
+                ${order.paymentMethod === 'online' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
                 {order.paymentMethod === 'online'
-                  ? <><Smartphone size={10} /> Online</>
-                  : <><Banknote size={10} /> Cash</>}
-              </span>
+                  ? <><Smartphone size={9} /> Online</>
+                  : <><Banknote size={9} /> Cash</>}
               </span>
             )}
+
+            {/* Payment status badge */}
+            <span className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full
+              ${order.paymentStatus === 'pending'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-emerald-100 text-emerald-700'}`}>
+              {order.paymentStatus === 'pending'
+                ? <><Clock size={9} /> Pending</>
+                : <><Check size={9} /> Paid</>}
+            </span>
           </div>
         </div>
         <div className="flex gap-1.5">
@@ -296,7 +304,8 @@ export default function PhysicalOrders() {
   const [lamination, setLamination] = useState({ type: 'none', price: '' })
   const [plotter, setPlotter]       = useState({ type: 'none', price: '' })
   const [customer, setCustomer]     = useState({ name: '', phone: '', date: today(), note: '', advance: '' })
-  const [payMethod, setPayMethod]   = useState('cash') // 'cash' | 'online'
+  const [payMethod, setPayMethod]   = useState('cash')   // 'cash' | 'online'
+  const [payStatus, setPayStatus]   = useState('paid')   // 'paid' | 'pending'
   const [saving, setSaving]         = useState(false)
   const [saved, setSaved]           = useState(false)
 
@@ -375,6 +384,7 @@ export default function PhysicalOrders() {
     setManual({ label: '', price: '' })
     setOwnMat({ label: '', printCost: '' })
     setPayMethod('cash')
+    setPayStatus('paid')
   }
 
   const handleSave = async () => {
@@ -388,7 +398,7 @@ export default function PhysicalOrders() {
     if (!allItems.length) return alert('Add at least one item.')
     setSaving(true)
     try {
-      await addPhysicalOrder({ customerName: customer.name.trim(), phone: customer.phone.trim(), date: customer.date, note: customer.note.trim(), advance, items: allItems, total: grandTotal, paymentMethod: payMethod })
+      await addPhysicalOrder({ customerName: customer.name.trim(), phone: customer.phone.trim(), date: customer.date, note: customer.note.trim(), advance, items: allItems, total: grandTotal, paymentMethod: payMethod, paymentStatus: payStatus })
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
       resetCart(); load()
@@ -397,7 +407,8 @@ export default function PhysicalOrders() {
   }
 
   const totalItems = cartItems.length + manualItems.length + (lamPrice > 0 ? 1 : 0) + (plotPrice > 0 ? 1 : 0)
-  const pendingCount = orders.filter(o => o.status === 'pending').length
+  const pendingCount        = orders.filter(o => o.status === 'pending').length
+  const paymentPendingCount = orders.filter(o => o.paymentStatus === 'pending').length
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -664,6 +675,15 @@ export default function PhysicalOrders() {
                       className="flex-1 text-sm bg-transparent focus:outline-none placeholder:text-slate-400 min-w-0" />
                   </div>
                 </div>
+                <div className="flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus-within:border-brand-400 focus-within:bg-white transition-colors">
+                  <Calendar size={12} className="text-slate-400 shrink-0" />
+                  <input
+                    type="date"
+                    value={customer.date}
+                    onChange={e => setCustomer(c => ({ ...c, date: e.target.value }))}
+                    className="flex-1 text-sm bg-transparent focus:outline-none text-slate-700 min-w-0"
+                  />
+                </div>
                 <div className="flex items-start gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 focus-within:border-brand-400 focus-within:bg-white transition-colors">
                   <FileText size={12} className="text-slate-400 shrink-0 mt-0.5" />
                   <textarea value={customer.note} onChange={e => setCustomer(c => ({ ...c, note: e.target.value }))}
@@ -672,30 +692,58 @@ export default function PhysicalOrders() {
                 </div>
               </div>
 
-              {/* Payment method */}
-              <div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Payment Method</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'cash',   label: 'Cash',   Icon: Banknote },
-                    { id: 'online', label: 'Online', Icon: Smartphone },
-                  ].map(opt => (
-                    <button
-                      key={opt.id}
-                      onClick={() => setPayMethod(opt.id)}
-                      className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold
-                                  border transition-all duration-200
-                                  ${payMethod === opt.id
-                                    ? opt.id === 'cash'
-                                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-200'
-                                      : 'bg-blue-500 text-white border-blue-500 shadow-sm shadow-blue-200'
-                                    : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
-                                  }`}
-                    >
-                      <opt.Icon size={15} />
-                      {opt.label}
-                    </button>
-                  ))}
+              {/* Payment method + status */}
+              <div className="space-y-2.5">
+                {/* Method: Cash / Online */}
+                <div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Payment Method</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'cash',   label: 'Cash',   Icon: Banknote },
+                      { id: 'online', label: 'Online', Icon: Smartphone },
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setPayMethod(opt.id)}
+                        className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold
+                                    border transition-all duration-200
+                                    ${payMethod === opt.id
+                                      ? opt.id === 'cash'
+                                        ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-200'
+                                        : 'bg-blue-500 text-white border-blue-500 shadow-sm shadow-blue-200'
+                                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                                    }`}
+                      >
+                        <opt.Icon size={15} />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Status: Paid / Pending */}
+                <div>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Payment Status</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'paid',    label: 'Paid',    Icon: Check,  activeClass: 'bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-200' },
+                      { id: 'pending', label: 'Pending', Icon: Clock,  activeClass: 'bg-amber-500 text-white border-amber-500 shadow-sm shadow-amber-200' },
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setPayStatus(opt.id)}
+                        className={`flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold
+                                    border transition-all duration-200
+                                    ${payStatus === opt.id
+                                      ? opt.activeClass
+                                      : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                                    }`}
+                      >
+                        <opt.Icon size={15} />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -748,7 +796,21 @@ export default function PhysicalOrders() {
 
       {/* ── HISTORY ────────────────────────────────────────────────────────── */}
       {view === 'history' && (
-        <div>
+        <div className="space-y-4">
+
+          {/* Payment pending alert */}
+          {paymentPendingCount > 0 && (
+            <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+              <Clock size={18} className="text-amber-500 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-amber-800">
+                  {paymentPendingCount} order{paymentPendingCount > 1 ? 's' : ''} with payment pending
+                </p>
+                <p className="text-xs text-amber-600">These customers still owe payment — look for the amber "Pending" badge below.</p>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center h-40">
               <div className="w-6 h-6 border-[3px] border-brand-400 border-t-transparent rounded-full animate-spin" />
