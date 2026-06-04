@@ -208,15 +208,6 @@ export async function convertPhysicalOrderToSales(order) {
 }
 
 // ---- Queries ----
-// Fetch sales/expenses, optionally filtered to a single "YYYY-MM" month.
-export async function getSales(month) {
-  const q = month
-    ? query(salesCol, where('month', '==', month))
-    : query(salesCol, orderBy('date', 'desc'))
-  const snap = await getDocs(q)
-  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-  return rows.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-}
 
 export async function getExpenses(month) {
   const q = month
