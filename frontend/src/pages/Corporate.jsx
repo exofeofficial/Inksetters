@@ -239,10 +239,10 @@ export default function Corporate() {
 
       {/* ── HERO + FORM ── */}
       <section className="relative bg-slate-900 overflow-hidden">
-        {/* Background glows — smaller on mobile to reduce paint cost */}
-        <div aria-hidden className="pointer-events-none absolute top-0 left-[8%] w-[28rem] h-[28rem] sm:w-[44rem] sm:h-[44rem] rounded-full bg-brand-500/8 blur-[90px] sm:blur-[130px]" />
-        <div aria-hidden className="pointer-events-none absolute bottom-0 right-[5%] w-[20rem] h-[20rem] sm:w-[32rem] sm:h-[32rem] rounded-full bg-sky-500/5 blur-[80px] sm:blur-[110px]" />
-        {/* subtle grid — hidden on mobile */}
+        {/* Blobs — desktop only, mobile pe remove (blur is killer on mobile GPU) */}
+        <div aria-hidden className="pointer-events-none hidden sm:block absolute top-0 left-[8%] w-[44rem] h-[44rem] rounded-full bg-brand-500/8 blur-[130px]" />
+        <div aria-hidden className="pointer-events-none hidden sm:block absolute bottom-0 right-[5%] w-[32rem] h-[32rem] rounded-full bg-sky-500/5 blur-[110px]" />
+        {/* Grid — desktop only */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.025] hidden sm:block"
@@ -252,14 +252,8 @@ export default function Corporate() {
         <div className="relative max-w-[88rem] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px] gap-10 xl:gap-24 items-start py-24 sm:py-28 lg:py-32">
 
-            {/* ── LEFT — Details ── */}
-            {/* Single wrapper animation instead of animating each child separately — much lighter on mobile */}
-            <motion.div
-              className="pt-2"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
+            {/* ── LEFT — no animations on mobile (plain div), sm+ gets fade ── */}
+            <div className="pt-2">
               {/* Badge */}
               <div className="inline-flex items-center gap-2 bg-brand-500/15 border border-brand-500/25 rounded-full px-4 py-1.5 mb-8">
                 <Building2 size={13} className="text-brand-400" />
@@ -267,23 +261,23 @@ export default function Corporate() {
               </div>
 
               {/* Heading */}
-              <h1 className="text-5xl sm:text-6xl xl:text-7xl font-black tracking-tighter leading-none text-white mb-6">
+              <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black tracking-tighter leading-none text-white mb-6">
                 Print at scale.
                 <span className="block text-brand-400">Built for business.</span>
               </h1>
 
               {/* Description */}
-              <p className="text-slate-400 text-lg leading-relaxed max-w-lg mb-10">
+              <p className="text-slate-400 text-base sm:text-lg leading-relaxed max-w-lg mb-8 sm:mb-10">
                 From 50 business cards to 5,000 branded uniforms — Inksetters delivers consistent,
                 premium-quality prints for businesses of every size across Lahore.
               </p>
 
               {/* Benefits list */}
-              <ul className="space-y-5 mb-12">
+              <ul className="space-y-4 mb-10">
                 {BENEFITS.map(({ icon: Icon, title, desc }) => (
-                  <li key={title} className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-brand-500/15 border border-brand-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <Icon size={18} className="text-brand-400" />
+                  <li key={title} className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-500/15 border border-brand-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon size={16} className="text-brand-400" />
                     </div>
                     <div>
                       <p className="text-white font-bold text-sm leading-tight">{title}</p>
@@ -294,10 +288,10 @@ export default function Corporate() {
               </ul>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 sm:mb-10">
                 {STATS.map(({ val, label, color }) => (
-                  <div key={label} className="bg-white/5 border border-white/8 rounded-2xl p-4 text-center hover:bg-white/10 transition-colors">
-                    <p className={`text-2xl font-black ${color}`}>{val}</p>
+                  <div key={label} className="bg-white/5 border border-white/8 rounded-2xl p-3 sm:p-4 text-center">
+                    <p className={`text-xl sm:text-2xl font-black ${color}`}>{val}</p>
                     <p className="text-slate-500 text-xs mt-1 font-medium">{label}</p>
                   </div>
                 ))}
@@ -306,15 +300,15 @@ export default function Corporate() {
               {/* Contact details */}
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                 <a href="https://wa.me/923398000112" target="_blank" rel="noreferrer"
-                   className="flex items-center gap-2 text-slate-400 hover:text-brand-400 transition-colors text-sm group">
-                  <div className="w-8 h-8 rounded-lg bg-white/6 group-hover:bg-brand-500/15 flex items-center justify-center shrink-0 transition-colors">
+                   className="flex items-center gap-2 text-slate-400 hover:text-brand-400 transition-colors text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-white/6 flex items-center justify-center shrink-0">
                     <Phone size={14} className="text-brand-400" />
                   </div>
                   +92 339 8000112
                 </a>
                 <a href="mailto:info.inksetters@gmail.com"
-                   className="flex items-center gap-2 text-slate-400 hover:text-brand-400 transition-colors text-sm group">
-                  <div className="w-8 h-8 rounded-lg bg-white/6 group-hover:bg-brand-500/15 flex items-center justify-center shrink-0 transition-colors">
+                   className="flex items-center gap-2 text-slate-400 hover:text-brand-400 transition-colors text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-white/6 flex items-center justify-center shrink-0">
                     <Mail size={14} className="text-brand-400" />
                   </div>
                   info.inksetters@gmail.com
@@ -326,15 +320,10 @@ export default function Corporate() {
                   Lahore, Pakistan
                 </span>
               </div>
-            </motion.div>
+            </div>
 
-            {/* ── RIGHT — Form — fade only (no x-slide) for smooth mobile render ── */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
-              className="lg:sticky lg:top-8"
-            >
+            {/* ── RIGHT — Form — no animation wrapper (content shows instantly) ── */}
+            <div className="lg:sticky lg:top-8">
               <AnimatePresence mode="wait">
                 {status === 'done' ? (
                   <motion.div
@@ -616,7 +605,7 @@ export default function Corporate() {
                   </motion.form>
                 )}
               </AnimatePresence>
-            </motion.div>
+            </div>
 
           </div>
         </div>
